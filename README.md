@@ -95,18 +95,14 @@ templateflow/
 bash
 
 克隆项目
-git clone https://github.com/yourusername/templateflow.git
+git clone https://github.com/starttown/TemplateFlow.git
 
 进入目录
 cd templateflow
 
-启动本地服务器
-npx serve .
+双击index.html运行
 
-或使用 Python
-python -m http.server 8000
 
-访问 http://localhost:8000
 
 
 ---
@@ -210,10 +206,11 @@ python -m http.server 8000
 
 ## 📞 联系我们
 
-- 🌐 **项目主页**：[github.com/yourusername/templateflow](https://github.com/yourusername/templateflow)
-- 🐛 **问题反馈**：[Issues](https://github.com/yourusername/templateflow/issues)
-- 💬 **功能讨论**：[Discussions](https://github.com/yourusername/templateflow/discussions)
-- 📧 **邮件联系**：[your-email@example.com](mailto:your-email@example.com)
+- 🐛 **问题反馈**：[Issues](https://github.com/starttown/TemplateFlow/issues)
+- 💬 **功能讨论**：[Discussions](https://github.com/starttown/TemplateFlow/discussions)
+- **公众号**
+![qrcode_for_gh_8436fb5dc709_258](https://github.com/user-attachments/assets/5fad47ef-7fa5-48fb-a056-c5f004e4ba46)
+
 
 ---
 
