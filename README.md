@@ -1,8 +1,8 @@
 # TemplateFlow
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Open Source](https://img.shields.io/badge/Open%20Source-%E2%9D%A4-brightgreen)](https://github.com/yourusername/templateflow)
-[![Template System](https://img.shields.io/badge/Type-Template%20System-blue.svg)](https://github.com/yourusername/templateflow)
+[![Open Source](https://img.shields.io/badge/Open%20Source-%E2%9D%A4-brightgreen)](https://starttown.github.io/TemplateFlow/)
+[![Template System](https://img.shields.io/badge/Type-Template%20System-blue.svg)](https://starttown.github.io/TemplateFlow/)
 
 **专业的平面设计套版工具** - 创建模板、批量替换、一键生成，让设计工作流更高效
 
@@ -76,9 +76,13 @@
 
 templateflow/
 ├── index.html # 项目主页
+
 ├── template-editor.html # 模板编辑器
+
 ├── batch-processor.html # 批量处理器
+
 ├── README.md # 项目文档
+
 └── LICENSE # 开源协议
 
 
@@ -88,7 +92,7 @@ templateflow/
 ## 🚀 快速开始
 
 ### 在线体验
-1. 访问 [GitHub Pages](https://yourusername.github.io/templateflow)
+1. 访问 [GitHub Pages](https://starttown.github.io/TemplateFlow/)
 2. 直接在浏览器中打开使用
 
 ### 本地部署
@@ -148,16 +152,6 @@ cd templateflow
 
 我们欢迎所有形式的贡献！
 
-### 🐛 报告问题
-- 使用 [GitHub Issues](https://github.com/yourusername/templateflow/issues)
-- 提供详细的复现步骤
-- 包含浏览器和系统信息
-
-### 💡 功能建议
-- 在 [Discussions](https://github.com/yourusername/templateflow/discussions) 中提出
-- 说明使用场景和预期效果
-- 提供设计草图或原型
-
 ### 🔧 代码贡献
 1. Fork 本仓库
 2. 创建特性分支：`git checkout -b feature/amazing-feature`
@@ -207,7 +201,6 @@ cd templateflow
 ## 📞 联系我们
 
 - 🐛 **问题反馈**：[Issues](https://github.com/starttown/TemplateFlow/issues)
-- 💬 **功能讨论**：[Discussions](https://github.com/starttown/TemplateFlow/discussions)
 - **公众号**
 ![qrcode_for_gh_8436fb5dc709_258](https://github.com/user-attachments/assets/5fad47ef-7fa5-48fb-a056-c5f004e4ba46)
 
