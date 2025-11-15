@@ -42,6 +42,12 @@
 ---
 
 ## 🚀 应用场景
+<img width="2538" height="1473" alt="PixPin_2025-11-15_21-03-37" src="https://github.com/user-attachments/assets/9479219c-1169-4f40-90e5-845c9fb9f4c5" />
+<img width="2018" height="1439" alt="PixPin_2025-11-15_21-00-20" src="https://github.com/user-attachments/assets/ecfd6d19-95e2-45a7-b5bd-744fbe068166" />
+<img width="2063" height="1452" alt="PixPin_2025-11-15_21-01-14" src="https://github.com/user-attachments/assets/e34dcf72-2dad-420e-a7d5-da9c2eaa2c54" />
+<img width="1600" height="960" alt="canvas-1763211415580" src="https://github.com/user-attachments/assets/aa0abc6c-3079-4eb1-a607-242859896e72" />
+
+
 
 ### 📱 社交媒体内容
 创建Instagram模板 → 批量替换产品图 → 一周内容搞定
