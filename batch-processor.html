@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON画布编辑器 - Canvas Editor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 1.5rem 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            z-index: 100;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        h1 {
+            color: #1e293b;
+            font-size: 1.75rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        #datetime {
+            color: #64748b;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .main-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+            flex: 1;
+            width: 100%;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            flex: 1;
+        }
+
+        .panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .section-title span {
+            font-size: 1.5rem;
+        }
+
+        .canvas-preview {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 16px;
+            min-height: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.05);
+            cursor: crosshair;
+        }
+
+        #preview-canvas {
+            max-width: 100%;
+            max-height: 100%;
+            display: block;
+        }
+
+        .empty-state {
+            color: #94a3b8;
+            text-align: center;
+            padding: 3rem;
+        }
+
+        .empty-state p {
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .input-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.9rem;
+            color: #475569;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        input[type="text"],
+        input[type="file"],
+        select {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        input[type="text"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+            transform: translateY(-1px);
+        }
+
+        button {
+            width: 100%;
+            padding: 0.875rem 1.25rem;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            box-shadow: 0 4px 14px rgba(99, 102, 241, 0.3);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        button.secondary {
+            background: white;
+            color: #6366f1;
+            border: 2px solid #6366f1;
+            box-shadow: none;
+        }
+
+        button.secondary:hover {
+            background: #f8fafc;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+        }
+
+        .elements-list {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            padding: 0.75rem;
+        }
+
+        .element-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 0.75rem;
+            background: #f8fafc;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .element-item:hover {
+            background: #f1f5f9;
+            transform: translateX(4px);
+        }
+
+        .element-item.selected {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
+            border: 2px solid #6366f1;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+        }
+
+        .element-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex: 1;
+        }
+
+        .element-thumbnail {
+            width: 48px;
+            height: 48px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .element-name {
+            font-size: 0.95rem;
+            color: #1e293b;
+            flex: 1;
+            font-weight: 500;
+        }
+
+        .element-size {
+            font-size: 0.8rem;
+            color: #64748b;
+            background: #f1f5f9;
+            padding: 0.25rem 0.5rem;
+            border-radius: 6px;
+        }
+
+        .replace-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .export-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            background: #f8fafc;
+            border-radius: 10px;
+            transition: all 0.2s ease;
+        }
+
+        .checkbox-group:hover {
+            background: #f1f5f9;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: #6366f1;
+        }
+
+        .checkbox-group label {
+            margin-bottom: 0;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .stats {
+            display: flex;
+            gap: 2rem;
+            margin-top: 1rem;
+            padding: 1.25rem;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(139, 92, 246, 0.08));
+            border-radius: 12px;
+            border: 1px solid rgba(99, 102, 241, 0.1);
+        }
+
+        .stat-item {
+            text-align: center;
+            flex: 1;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #6366f1;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: white;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+            border-left: 4px solid #6366f1;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast.success {
+            border-left-color: #10b981;
+        }
+
+        .toast.error {
+            border-left-color: #ef4444;
+        }
+
+        .toast.info {
+            border-left-color: #3b82f6;
+        }
+
+        #toast-icon {
+            font-size: 1.25rem;
+        }
+
+        #toast-message {
+            font-weight: 500;
+            color: #1e293b;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: -9999px;
+        }
+
+        .file-input-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            width: 100%;
+            padding: 0.875rem 1.25rem;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 14px rgba(99, 102, 241, 0.3);
+        }
+
+        .file-input-label:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4);
+        }
+
+        .file-input-label:active {
+            transform: translateY(0);
+        }
+
+        /* 滚动条美化 */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <h1>
+                <div class="logo">CE</div>
+                JSON画布编辑器
+            </h1>
+            <div id="datetime"></div>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <div class="content-grid">
+            <!-- 左侧：画布预览 -->
+            <div class="panel">
+                <h2 class="section-title">
+                    <span>🖼️</span> 画布预览
+                </h2>
+                <div class="canvas-preview" id="canvas-container">
+                    <div id="preview-empty" class="empty-state">
+                        <p>📁 请导入JSON文件</p>
+                        <p>显示画布内容</p>
+                    </div>
+                    <canvas id="preview-canvas" style="display: none;"></canvas>
+                </div>
+                
+                <div class="stats">
+                    <div class="stat-item">
+                        <div class="stat-value" id="element-count">0</div>
+                        <div class="stat-label">元素数量</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="canvas-size">-</div>
+                        <div class="stat-label">画布尺寸</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右侧：操作面板 -->
+            <div class="panel">
+                <h2 class="section-title">
+                    <span>📂</span> 数据导入
+                </h2>
+                <div class="file-input-wrapper">
+                    <input type="file" id="json-input" accept=".json">
+                    <label for="json-input" class="file-input-label">
+                        <span>📥</span> 导入JSON
+                    </label>
+                </div>
+
+                <h2 class="section-title">
+                    <span>📋</span> 元素列表
+                </h2>
+                <div class="elements-list" id="elements-list">
+                    <div class="empty-state">
+                        <p>暂无元素</p>
+                    </div>
+                </div>
+
+                <h2 class="section-title">
+                    <span>🔄</span> 批量替换图片
+                </h2>
+                <div class="replace-controls">
+                    <div class="file-input-wrapper">
+                        <input type="file" id="replace-input" accept="image/*" multiple>
+                        <label for="replace-input" class="file-input-label secondary">
+                            <span>🖼️</span> 选择替换图片
+                        </label>
+                    </div>
+                    <button onclick="batchReplace()" id="replace-btn" disabled>
+                        <span>🔄</span> 批量替换图片
+                    </button>
+                </div>
+
+                <h2 class="section-title">
+                    <span>📦</span> 导出选项
+                </h2>
+                <div class="export-controls">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="export-with-bg" checked>
+                        <label for="export-with-bg">包含背景</label>
+                    </div>
+                    <div class="input-group">
+                        <label for="export-format">导出格式</label>
+                        <select id="export-format">
+                            <option value="png">PNG</option>
+                            <option value="jpeg">JPEG</option>
+                            <option value="webp">WebP</option>
+                        </select>
+                    </div>
+                    <button onclick="exportCanvas()" id="export-canvas-btn" disabled>
+                        <span>🖼️</span> 导出画布图片
+                    </button>
+                    <button onclick="exportJSON()" id="export-json-btn" disabled>
+                        <span>💾</span> 导出JSON
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast">
+        <span id="toast-icon"></span>
+        <span id="toast-message"></span>
+    </div>
+
+    <script>
+        // 全局变量
+        let canvasElements = [];
+        let selectedElements = [];
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            updateDateTime();
+            setInterval(updateDateTime, 1000);
+            
+            // 绑定事件
+            document.getElementById('json-input').addEventListener('change', handleJSONUpload);
+            document.getElementById('replace-input').addEventListener('change', handleImageUpload);
+            
+            // 添加画布点击事件
+            document.getElementById('canvas-container').addEventListener('click', handleCanvasClick);
+        });
+
+        // 更新时间显示
+        function updateDateTime() {
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('zh-CN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                weekday: 'long'
+            });
+            const timeStr = now.toLocaleTimeString('zh-CN');
+            document.getElementById('datetime').textContent = `${dateStr} ${timeStr}`;
+        }
+
+        // 处理JSON上传
+        function handleJSONUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                try {
+                    const data = JSON.parse(event.target.result);
+                    loadCanvasData(data);
+                    showToast('JSON文件已导入', 'success');
+                } catch (error) {
+                    showToast('JSON文件格式错误', 'error');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // 处理图片上传
+        function handleImageUpload(e) {
+            const files = Array.from(e.target.files);
+            if (files.length === 0) return;
+            
+            if (canvasElements.length === 0) {
+                showToast('请先导入JSON文件', 'error');
+                return;
+            }
+            
+            document.getElementById('replace-btn').disabled = false;
+            showToast(`已选择 ${files.length} 张图片`, 'info');
+        }
+
+        // 处理画布点击
+        function handleCanvasClick(e) {
+            if (canvasElements.length === 0) return;
+            
+            const canvas = document.getElementById('preview-canvas');
+            if (canvas.style.display === 'none') return;
+            
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            
+            const x = (e.clientX - rect.left) * scaleX;
+            const y = (e.clientY - rect.top) * scaleY;
+            
+            // 检查点击了哪个元素
+            const clickedElement = findElementAtPosition(x, y);
+            
+            if (clickedElement) {
+                toggleElementSelection(canvasElements.indexOf(clickedElement));
+            } else {
+                // 点击空白处，清除所有选择
+                selectedElements = [];
+                updateElementsList();
+                renderCanvasPreview();
+            }
+        }
+
+        // 查找指定位置的元素
+        function findElementAtPosition(x, y) {
+            // 按z-index倒序查找，优先选择上层元素
+            const sortedElements = [...canvasElements].sort((a, b) => (b.zIndex || 0) - (a.zIndex || 0));
+            
+            for (const element of sortedElements) {
+                if (x >= element.x && x <= element.x + element.width &&
+                    y >= element.y && y <= element.y + element.height) {
+                    return element;
+                }
+            }
+            
+            return null;
+        }
+
+        // 加载画布数据
+        function loadCanvasData(data) {
+            canvasElements = data.elements || [];
+            
+            // 更新统计信息
+            updateStats();
+            
+            // 显示画布预览
+            renderCanvasPreview();
+            
+            // 更新元素列表
+            updateElementsList();
+            
+            // 启用按钮
+            document.getElementById('export-canvas-btn').disabled = false;
+            document.getElementById('export-json-btn').disabled = false;
+        }
+
+        // 更新统计信息
+        function updateStats() {
+            document.getElementById('element-count').textContent = canvasElements.length;
+            
+            if (canvasElements.length > 0) {
+                const canvas = document.getElementById('preview-canvas');
+                document.getElementById('canvas-size').textContent = `${canvas.width} x ${canvas.height}`;
+            } else {
+                document.getElementById('canvas-size').textContent = '-';
+            }
+        }
+
+        // 渲染画布预览
+        function renderCanvasPreview() {
+            const previewEmpty = document.getElementById('preview-empty');
+            const previewCanvas = document.getElementById('preview-canvas');
+            
+            if (canvasElements.length === 0) {
+                previewEmpty.style.display = 'block';
+                previewCanvas.style.display = 'none';
+                return;
+            }
+            
+            previewEmpty.style.display = 'none';
+            previewCanvas.style.display = 'block';
+            
+            const ctx = previewCanvas.getContext('2d');
+            
+            // 设置画布尺寸
+            if (canvasElements.length > 0) {
+                const firstElement = canvasElements[0];
+                const canvasWidth = firstElement.canvasWidth || 1920;
+                const canvasHeight = firstElement.canvasHeight || 1080;
+                
+                previewCanvas.width = canvasWidth;
+                previewCanvas.height = canvasHeight;
+                
+                // 白色背景
+                ctx.fillStyle = 'white';
+                ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+                
+                // 按z-index排序绘制元素
+                const sortedElements = [...canvasElements].sort((a, b) => (a.zIndex || 0) - (b.zIndex || 0));
+                
+                let loadedImages = 0;
+                const totalImages = sortedElements.length;
+                
+                if (totalImages === 0) return;
+                
+                sortedElements.forEach(elementData => {
+                    const img = new Image();
+                    img.onload = function() {
+                        // 绘制图片
+                        ctx.drawImage(img, elementData.x, elementData.y, elementData.width, elementData.height);
+                        
+                        // 如果元素被选中，绘制边框
+                        if (selectedElements.includes(elementData)) {
+                            ctx.strokeStyle = '#6366f1';
+                            ctx.lineWidth = 3;
+                            ctx.setLineDash([5, 5]);
+                            ctx.strokeRect(elementData.x, elementData.y, elementData.width, elementData.height);
+                            ctx.setLineDash([]);
+                            
+                            // 绘制选中角标
+                            const cornerSize = 8;
+                            ctx.fillStyle = '#6366f1';
+                            
+                            // 左上角
+                            ctx.fillRect(elementData.x - cornerSize/2, elementData.y - cornerSize/2, cornerSize, cornerSize);
+                            // 右上角
+                            ctx.fillRect(elementData.x + elementData.width - cornerSize/2, elementData.y - cornerSize/2, cornerSize, cornerSize);
+                            // 左下角
+                            ctx.fillRect(elementData.x - cornerSize/2, elementData.y + elementData.height - cornerSize/2, cornerSize, cornerSize);
+                            // 右下角
+                            ctx.fillRect(elementData.x + elementData.width - cornerSize/2, elementData.y + elementData.height - cornerSize/2, cornerSize, cornerSize);
+                        }
+                        
+                        loadedImages++;
+                    };
+                    img.src = elementData.src;
+                });
+            }
+        }
+
+        // 更新元素列表
+        function updateElementsList() {
+            const list = document.getElementById('elements-list');
+            
+            if (canvasElements.length === 0) {
+                list.innerHTML = '<div class="empty-state"><p>暂无元素</p></div>';
+                return;
+            }
+            
+            // 按z-index排序显示
+            const sortedElements = [...canvasElements].sort((a, b) => (b.zIndex || 0) - (a.zIndex || 0));
+            
+            list.innerHTML = sortedElements.map((el, index) => `
+                <div class="element-item ${selectedElements.includes(el) ? 'selected' : ''}" onclick="toggleElementSelection(${index})">
+                    <div class="element-info">
+                        <img src="${el.src}" alt="${el.name}" class="element-thumbnail">
+                        <div>
+                            <div class="element-name">${el.name || '图片 ' + (index + 1)}</div>
+                            <div class="element-size">${el.width} × ${el.height}</div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 切换元素选择
+        function toggleElementSelection(index) {
+            const element = canvasElements[index];
+            const elementIndex = selectedElements.indexOf(element);
+            
+            if (elementIndex > -1) {
+                selectedElements.splice(elementIndex, 1);
+            } else {
+                selectedElements.push(element);
+            }
+            
+            updateElementsList();
+            renderCanvasPreview(); // 更新画布预览中的选中状态
+        }
+
+        // 批量替换图片
+        function batchReplace() {
+            if (canvasElements.length === 0) return;
+            
+            const files = Array.from(document.getElementById('replace-input').files);
+            if (files.length === 0) {
+                showToast('请选择替换图片', 'error');
+                return;
+            }
+            
+            if (selectedElements.length === 0) {
+                showToast('请选择要替换的元素', 'error');
+                return;
+            }
+            
+            let replacedCount = 0;
+            const fileIndex = { current: 0 };
+            
+            selectedElements.forEach((elementData) => {
+                if (fileIndex.current >= files.length) {
+                    fileIndex.current = 0; // 循环使用图片
+                }
+                
+                const file = files[fileIndex.current];
+                const reader = new FileReader();
+                
+                reader.onload = function(event) {
+                    // 只更新图片源，保持原始尺寸和位置
+                    elementData.src = event.target.result;
+                    elementData.name = file.name;
+                    
+                    replacedCount++;
+                    
+                    if (replacedCount === selectedElements.length) {
+                        renderCanvasPreview();
+                        updateElementsList();
+                        showToast(`已替换 ${replacedCount} 个元素`, 'success');
+                    }
+                };
+                
+                reader.readAsDataURL(file);
+                fileIndex.current++;
+            });
+        }
+
+        // 导出画布
+        function exportCanvas() {
+            if (canvasElements.length === 0) return;
+            
+            const withBg = document.getElementById('export-with-bg').checked;
+            const format = document.getElementById('export-format').value;
+            
+            const exportCanvas = document.createElement('canvas');
+            const ctx = exportCanvas.getContext('2d');
+            
+            // 设置画布尺寸
+            const firstElement = canvasElements[0];
+            const canvasWidth = firstElement.canvasWidth || 1920;
+            const canvasHeight = firstElement.canvasHeight || 1080;
+            
+            exportCanvas.width = canvasWidth;
+            exportCanvas.height = canvasHeight;
+            
+            // 背景
+            if (withBg) {
+                ctx.fillStyle = 'white';
+                ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+            }
+            
+            // 按z-index排序绘制元素
+            const sortedElements = [...canvasElements].sort((a, b) => (a.zIndex || 0) - (b.zIndex || 0));
+            
+            let loadedImages = 0;
+            const totalImages = sortedElements.length;
+            
+            if (totalImages === 0) return;
+            
+            sortedElements.forEach(elementData => {
+                const img = new Image();
+                img.onload = function() {
+                    ctx.drawImage(img, elementData.x, elementData.y, elementData.width, elementData.height);
+                    loadedImages++;
+                    
+                    if (loadedImages === totalImages) {
+                        exportCanvas.toBlob(function(blob) {
+                            const url = URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            
+                            const extension = format === 'jpeg' ? 'jpg' : format;
+                            a.download = `canvas-${Date.now()}.${extension}`;
+                            
+                            a.click();
+                            URL.revokeObjectURL(url);
+                            
+                            showToast('画布已导出', 'success');
+                        }, `image/${format}`);
+                    }
+                };
+                img.src = elementData.src;
+            });
+        }
+
+        // 导出JSON
+        function exportJSON() {
+            if (canvasElements.length === 0) {
+                showToast('没有可导出的数据', 'error');
+                return;
+            }
+            
+            const data = {
+                elements: canvasElements,
+                timestamp: new Date().toISOString()
+            };
+            
+            const json = JSON.stringify(data, null, 2);
+            const blob = new Blob([json], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `canvas-data-${Date.now()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            showToast('JSON文件已导出', 'success');
+        }
+
+        // 显示提示消息
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            const icon = document.getElementById('toast-icon');
+            const msg = document.getElementById('toast-message');
+            
+            toast.className = 'toast ' + type;
+            msg.textContent = message;
+            
+            switch(type) {
+                case 'success':
+                    icon.textContent = '✅';
+                    break;
+                case 'error':
+                    icon.textContent = '❌';
+                    break;
+                case 'info':
+                    icon.textContent = 'ℹ️';
+                    break;
+            }
+            
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
